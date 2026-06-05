@@ -5,7 +5,7 @@ Personal configuration for macOS — zsh, neovim, git, karabiner, claude code.
 ## Install
 
 ```sh
-git clone https://github.com/<user>/dotfiles ~/dotfiles
+git clone https://github.com/morrijm4/dotfiles ~/dotfiles
 cd ~/dotfiles
 ./install.sh
 ```
