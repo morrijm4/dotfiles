@@ -45,5 +45,34 @@ if command -v brew >/dev/null 2>&1 && [[ -f "$DOTFILES/Brewfile" ]]; then
   brew bundle install --file="$DOTFILES/Brewfile"
 fi
 
+# Install Neovim from official release tarball (not via brew — see ~/notes).
+# Bump NVIM_VERSION to upgrade.
+NVIM_VERSION="v0.11.7"
+NVIM_DIR="$HOME/.local/nvim/$NVIM_VERSION"
+
+if [[ ! -x "$NVIM_DIR/bin/nvim" ]]; then
+  arch="$(uname -m)"
+  case "$arch" in
+    arm64)  asset="nvim-macos-arm64" ;;
+    x86_64) asset="nvim-macos-x86_64" ;;
+    *) echo "unsupported arch for nvim install: $arch" >&2; exit 1 ;;
+  esac
+  url="https://github.com/neovim/neovim/releases/download/$NVIM_VERSION/$asset.tar.gz"
+  tmp="$(mktemp -d)"
+  echo "installing neovim $NVIM_VERSION from $url..."
+  curl -fsSL "$url" | tar -xz -C "$tmp"
+  xattr -c "$tmp/$asset/bin/nvim" 2>/dev/null || true
+  mkdir -p "$(dirname "$NVIM_DIR")"
+  mv "$tmp/$asset" "$NVIM_DIR"
+  rm -rf "$tmp"
+  echo "installed neovim to $NVIM_DIR"
+else
+  echo "neovim $NVIM_VERSION already at $NVIM_DIR"
+fi
+
+mkdir -p "$HOME/.local/bin"
+ln -sfn "$NVIM_DIR/bin/nvim" "$HOME/.local/bin/nvim"
+echo "linked $HOME/.local/bin/nvim -> $NVIM_DIR/bin/nvim"
+
 echo
 echo "done. backups (if any) live alongside originals as *.backup.<timestamp>"
