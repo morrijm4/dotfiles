@@ -1,0 +1,23 @@
+CC = gcc
+CFLAGS = -Wall \
+         -Wextra \
+         -mpclmul \
+         -mbmi2 \
+         -mavx512f \
+         -mavx512fp16 \
+         -mavx512vl \
+		 -maes \
+         -mamx-tile \
+         -mfma \
+
+OUTDIR = bin/
+
+%: %.c $(OUTDIR)
+	$(CC) $(CFLAGS) -o $(OUTDIR)$@ $<
+
+$(OUTDIR):
+	mkdir -p $(OUTDIR)
+
+clean:
+	rm -rf $(OUTDIR)
+
