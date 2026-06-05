@@ -10,9 +10,11 @@ cd ~/dotfiles
 ./install.sh
 ```
 
-`install.sh` symlinks every tracked file into its expected location under `$HOME`. If a real file already exists at the destination, it's backed up as `<path>.backup.<timestamp>` before the symlink replaces it.
+`install.sh`:
+1. Symlinks every tracked file into its expected location under `$HOME`. If a real file already exists at the destination, it's backed up as `<path>.backup.<timestamp>` before the symlink replaces it.
+2. Installs Homebrew if it's missing, then runs `brew bundle install --file=Brewfile` to install the listed CLI tools and casks.
 
-Re-running `install.sh` is safe — existing symlinks are replaced in place.
+Re-running `install.sh` is safe — existing symlinks are replaced in place, and `brew bundle` is idempotent.
 
 ## Layout
 
@@ -25,6 +27,7 @@ Re-running `install.sh` is safe — existing symlinks are replaced in place.
 | `karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` |
 | `nvim/` | `~/.config/nvim` |
 | `claude/settings.json` | `~/.claude/settings.json` |
+| `Brewfile` | (read by `brew bundle install`) |
 
 Source files are stored without the leading dot for easier browsing on GitHub; the install script adds the dot when linking.
 
@@ -34,6 +37,10 @@ Source files are stored without the leading dot for easier browsing on GitHub; t
 2. Add a `link` line to `install.sh`.
 3. Re-run `./install.sh`.
 4. Commit.
+
+## Adding a brew package
+
+Edit `Brewfile`, add `brew "<name>"` for CLI tools or `cask "<name>"` for GUI apps, then `brew bundle install --file=Brewfile`. To snapshot everything currently installed, run `brew bundle dump --force --file=Brewfile`.
 
 ## Not tracked
 

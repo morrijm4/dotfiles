@@ -28,4 +28,22 @@ link nvim                     .config/nvim
 link claude/settings.json     .claude/settings.json
 
 echo
+
+# Install Homebrew if missing, then install packages from Brewfile.
+if ! command -v brew >/dev/null 2>&1; then
+  echo "homebrew not found; installing..."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+fi
+
+if command -v brew >/dev/null 2>&1 && [[ -f "$DOTFILES/Brewfile" ]]; then
+  echo "running brew bundle..."
+  brew bundle install --file="$DOTFILES/Brewfile"
+fi
+
+echo
 echo "done. backups (if any) live alongside originals as *.backup.<timestamp>"
