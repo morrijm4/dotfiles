@@ -1,2 +1,5 @@
 
 eval "$(/opt/homebrew/bin/brew shellenv zsh)"
+
+# Added by `rbenv init` on Mon Jun  8 13:17:00 EDT 2026
+eval "$(rbenv init - --no-rehash zsh)"

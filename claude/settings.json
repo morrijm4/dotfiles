@@ -18,5 +18,6 @@
     }
   },
   "effortLevel": "high",
-  "theme": "dark"
+  "theme": "dark",
+  "skipWorkflowUsageWarning": true
 }

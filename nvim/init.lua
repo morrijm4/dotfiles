@@ -12,6 +12,7 @@ vim.o.shiftwidth = 4
 vim.o.expandtab = true
 vim.o.softtabstop = 4
 vim.o.winborder = 'rounded'
+vim.o.signcolumn = 'yes'
 vim.g.mapleader = ' '
 
 -------------
@@ -21,9 +22,9 @@ vim.opt.rtp:prepend(vim.fn.stdpath('data') .. '/lazy/lazy.nvim')
 
 ---@type LazySpec
 local lazy_spec = {
-    { "catppuccin/nvim",                 name = "catppuccin", priority = 1000 },
+    { "catppuccin/nvim",      name = "catppuccin", priority = 1000 },
     { 'neovim/nvim-lspconfig' },
-    { 'mason-org/mason.nvim',            opts = {} },
+    { 'mason-org/mason.nvim', opts = {} },
     {
         'mason-org/mason-lspconfig.nvim',
         dependencies = { 'mason-org/mason.nvim', 'neovim/nvim-lspconfig' },
@@ -44,8 +45,26 @@ local lazy_spec = {
             },
         },
     },
-    { 'nvim-telescope/telescope.nvim',   tag = '0.1.8',       dependencies = { 'nvim-lua/plenary.nvim' } },
-    { 'nvim-treesitter/nvim-treesitter', branch = 'master',   lazy = false,                              build = ':TSUpdate' },
+    { 'nvim-telescope/telescope.nvim',   tag = '0.1.8',     dependencies = { 'nvim-lua/plenary.nvim' } },
+    {
+        'lewis6991/gitsigns.nvim',
+        opts = {
+            current_line_blame = false,
+            current_line_blame_opts = { delay = 300, virt_text_pos = 'eol' },
+        },
+        config = function(_, opts)
+            require('gitsigns').setup(opts)
+            vim.keymap.set('n', 'gb', '<Cmd>Gitsigns toggle_current_line_blame<CR>',
+                { desc = '[mm] Toggle inline git blame' })
+            vim.keymap.set('n', 'gB', '<Cmd>Gitsigns blame_line<CR>',
+                { desc = '[mm] Show full git blame for line' })
+            vim.keymap.set('n', 'gp', '<Cmd>Gitsigns preview_hunk<CR>',
+                { desc = '[mm] Preview git hunk' })
+            vim.keymap.set('n', ']c', '<Cmd>Gitsigns next_hunk<CR>', { desc = '[mm] Next git hunk' })
+            vim.keymap.set('n', '[c', '<Cmd>Gitsigns prev_hunk<CR>', { desc = '[mm] Previous git hunk' })
+        end,
+    },
+    { 'nvim-treesitter/nvim-treesitter', branch = 'master', lazy = false,                              build = ':TSUpdate' },
     {
         'hrsh7th/nvim-cmp',
         dependencies = {
@@ -257,4 +276,5 @@ vim.lsp.enable({
     'pyright',
     'ruff',
     'solidity_ls_nomicfoundation',
+    'sorbet',
 })
