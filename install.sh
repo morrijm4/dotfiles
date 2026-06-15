@@ -26,6 +26,7 @@ link git/gitignore_global     .config/git/ignore
 link karabiner/karabiner.json .config/karabiner/karabiner.json
 link nvim                     .config/nvim
 link claude/settings.json     .claude/settings.json
+link tmux/tmux.conf           .tmux.conf
 
 echo
 

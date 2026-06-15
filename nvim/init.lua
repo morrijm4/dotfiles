@@ -45,6 +45,32 @@ local lazy_spec = {
             },
         },
     },
+    {
+        'stevearc/conform.nvim',
+        opts = {
+            formatters_by_ft = {
+                javascript = { 'prettier' },
+                javascriptreact = { 'prettier' },
+                typescript = { 'prettier' },
+                typescriptreact = { 'prettier' },
+                json = { 'prettier' },
+                jsonc = { 'prettier' },
+                css = { 'prettier' },
+                scss = { 'prettier' },
+                html = { 'prettier' },
+                -- markdown = { 'prettier' }, yaml = { 'prettier' }, -- enable if you want notes reformatted too
+            },
+            format_on_save = function(bufnr)
+                -- preserve the old clangd/solidity opt-out from the BufWritePre autocmd
+                local skip = { cpp = true, solidity = true }
+                if skip[vim.bo[bufnr].filetype] then
+                    return nil
+                end
+                -- prettier where configured above; LSP (lua_ls, rust_analyzer, ruff, tinymist…) otherwise
+                return { timeout_ms = 3000, lsp_format = 'fallback' }
+            end,
+        },
+    },
     { 'nvim-telescope/telescope.nvim',   tag = '0.1.8',     dependencies = { 'nvim-lua/plenary.nvim' } },
     {
         'lewis6991/gitsigns.nvim',
@@ -53,12 +79,41 @@ local lazy_spec = {
         },
         config = function(_, opts)
             require('gitsigns').setup(opts)
-            vim.keymap.set('n', 'gb', '<Cmd>Gitsigns toggle_current_line_blame<CR>',
+            vim.keymap.set('n', 'gB', '<Cmd>Gitsigns toggle_current_line_blame<CR>',
                 { desc = '[mm] Toggle inline git blame' })
-            vim.keymap.set('n', 'gB', '<Cmd>Gitsigns blame_line<CR>',
+            vim.keymap.set('n', 'gb', '<Cmd>Gitsigns blame_line<CR>',
                 { desc = '[mm] Show full git blame for line' })
             vim.keymap.set('n', 'gp', '<Cmd>Gitsigns preview_hunk<CR>',
                 { desc = '[mm] Preview git hunk' })
+            vim.keymap.set('n', 'gP', function()
+                local line = vim.fn.line('.')
+                local file = vim.fn.expand('%:p')
+                local cwd = vim.fn.fnamemodify(file, ':h')
+                vim.system(
+                    { 'git', 'blame', '-L', line .. ',' .. line, '--porcelain', '--', file },
+                    { text = true, cwd = cwd },
+                    function(blame_out)
+                        local sha = (blame_out.stdout or ''):match('^(%S+)')
+                        if not sha or sha:match('^0+$') then
+                            vim.schedule(function() vim.notify('No commit for this line') end)
+                            return
+                        end
+                        vim.system(
+                            { 'gh', 'api', 'repos/{owner}/{repo}/commits/' .. sha .. '/pulls',
+                                '--jq', '.[0].html_url' },
+                            { text = true, cwd = cwd },
+                            function(pr_out)
+                                local url = (pr_out.stdout or ''):gsub('%s+$', '')
+                                vim.schedule(function()
+                                    if url ~= '' then
+                                        vim.fn.jobstart({ 'open', url }, { detach = true })
+                                    else
+                                        vim.notify('No PR found for ' .. sha:sub(1, 7))
+                                    end
+                                end)
+                            end)
+                    end)
+            end, { desc = '[mm] Open blame PR on GitHub' })
             vim.keymap.set('n', ']c', '<Cmd>Gitsigns next_hunk<CR>', { desc = '[mm] Next git hunk' })
             vim.keymap.set('n', '[c', '<Cmd>Gitsigns prev_hunk<CR>', { desc = '[mm] Previous git hunk' })
         end,
@@ -135,7 +190,6 @@ vim.keymap.set('n', '<Leader>e', ':Explore<CR>', { desc = '[mm] Open file explor
 vim.keymap.set('v', '<Leader>y', '"+y', { desc = '[mm] Yank to clipboard' })
 vim.keymap.set('n', '<Leader>l', ':Lazy<CR>', { desc = '[mm] Open lazy.nvim' })
 vim.keymap.set('n', '<Leader>h', ':vert rightb help ', { desc = '[mm] Open help vertically' })
-vim.keymap.set('n', '<Leader>q', ':b#|bd#<CR>', { desc = '[mm] Delete current window and go bac' })
 
 -------------
 -- Windows --
@@ -165,6 +219,16 @@ vim.keymap.set({ 'n', 'v' }, '<Leader>fs', telescope.grep_string,
     { desc = '[mm] Grep string under cursor or highlighted' })
 vim.keymap.set({ 'n', 'v' }, '<Leader>fw', telescope.live_grep, { desc = '[mm] Live grep' })
 vim.keymap.set({ 'n', 'v' }, '<Leader>ss', telescope.spell_suggest, { desc = '[mm] Spell suggest' })
+
+--------------
+-- Quickfix --
+--------------
+vim.keymap.set('n', '<C-n>', '<Cmd>cnext<CR>', { desc = '[mm] Next quickfix item' })
+vim.keymap.set('n', '<C-p>', '<Cmd>cprevious<CR>', { desc = '[mm] Previous quickfix item' })
+vim.keymap.set('n', '<Leader>q', function()
+    local qf_open = vim.iter(vim.fn.getwininfo()):any(function(win) return win.quickfix == 1 end)
+    vim.cmd(qf_open and 'cclose' or 'copen')
+end, { desc = '[mm] Toggle quickfix window' })
 
 -------------------
 -- Auto Complete --
@@ -214,32 +278,22 @@ vim.keymap.set('n', 'gi', telescope.lsp_implementations, { desc = '[mm] Go to im
 vim.keymap.set('n', 'grr', telescope.lsp_references, { desc = '[mm] Go to references' })
 vim.keymap.set('n', 'gl', vim.diagnostic.open_float, { desc = '[mm] Show diagnositc' })
 vim.keymap.set('n', 'gh', vim.lsp.buf.hover, { desc = '[mm] Hover' })
-vim.keymap.set('n', 'ff', vim.lsp.buf.format, { desc = '[mm] Format file' })
+vim.keymap.set('n', 'ff', function()
+    require('conform').format({ lsp_format = 'fallback' })
+end, { desc = '[mm] Format file' })
 vim.keymap.set('n', '<Leader>r', vim.lsp.buf.rename, { desc = '[mm] Rename' })
 
-local autosave_group = vim.api.nvim_create_augroup('AutoSave', {})
-vim.api.nvim_create_autocmd('BufWritePre', {
-    group = autosave_group,
-    callback = function()
-        vim.lsp.buf.format({
-            async = false,
-            filter = function(client)
-                local disable = {
-                    "clangd",
-                    "solidity_ls_nomicfoundation",
-                }
-
-                for _, language_server in pairs(disable) do
-                    if language_server == client.name then
-                        return false
-                    end
-                end
-
-                return true
-            end
-
-        })
-    end
+-- ts_ls ships its own formatter that ignores Prettier; force it off so
+-- format-on-save can only go through conform (prettier) for TS/JS.
+vim.api.nvim_create_autocmd('LspAttach', {
+    group = vim.api.nvim_create_augroup('DisableTsLsFormatting', {}),
+    callback = function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        if client and client.name == 'ts_ls' then
+            client.server_capabilities.documentFormattingProvider = false
+            client.server_capabilities.documentRangeFormattingProvider = false
+        end
+    end,
 })
 
 vim.o.completeopt = 'menu,menuone,noselect,popup' -- Disable autocomplete & new popup
