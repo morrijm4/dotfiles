@@ -1,5 +1,6 @@
 require('bootstrap')
 require('rsync')
+require('hex-editor')
 
 ------------
 -- Options --
