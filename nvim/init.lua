@@ -340,7 +340,7 @@ vim.lsp.enable({
     'pyright',
     'ruff',
     'solidity_ls_nomicfoundation',
-    'ruby_ls',
+    'ruby_lsp',
     'zls',
     'bashls',
 })
