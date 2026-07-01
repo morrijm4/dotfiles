@@ -1,3 +1,6 @@
 [user]
 	email = matthew.morrison@savvywealth.com
 	name = Matthew Morrison
+[alias]
+	co = checkout
+	cm = commit -m
