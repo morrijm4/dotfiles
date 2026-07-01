@@ -211,15 +211,23 @@ vim.cmd([[tnoremap <Esc> <C-\><C-n>]]) -- map Esc to exit "TERMINAL" mode
 require('telescope-deps').check()
 
 local telescope = require('telescope.builtin')
+local remember = require('telescope-session').remember
+
+-- Each picker remembers its last prompt text for the session (see telescope-session.lua).
+local telescope_save = {
+    grep_string = remember('grep_string', telescope.grep_string),
+    live_grep = remember('live_grep', telescope.live_grep),
+}
+
 vim.keymap.set('n', '<Leader>p', telescope.find_files, { desc = '[mm] File finder' })
 vim.keymap.set('n', 'gs', telescope.git_status, { desc = '[mm] Git status' })
 vim.keymap.set('n', '<C-Space>', vim.lsp.buf.code_action, { desc = '[mm] Find code action' })
 vim.keymap.set('n', '<Leader>fb', telescope.buffers, { desc = '[mm] Search current buffer' })
 vim.keymap.set('n', '<Leader>fh', telescope.help_tags, { desc = '[mm] Search help tags' })
 vim.keymap.set('n', '<Leader>fk', telescope.keymaps, { desc = '[mm] Find keymap' })
-vim.keymap.set({ 'n', 'v' }, '<Leader>fs', telescope.grep_string,
+vim.keymap.set({ 'n', 'v' }, '<Leader>fs', telescope_save.grep_string,
     { desc = '[mm] Grep string under cursor or highlighted' })
-vim.keymap.set({ 'n', 'v' }, '<Leader>fw', telescope.live_grep, { desc = '[mm] Live grep' })
+vim.keymap.set({ 'n', 'v' }, '<Leader>fw', telescope_save.live_grep, { desc = '[mm] Live grep' })
 vim.keymap.set({ 'n', 'v' }, '<Leader>ss', telescope.spell_suggest, { desc = '[mm] Spell suggest' })
 
 --------------
