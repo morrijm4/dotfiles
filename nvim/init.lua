@@ -317,6 +317,7 @@ vim.lsp.config('*', {
 
 require('lsp-config.lua_ls')
 require('lsp-config.zls')
+require('lsp-config.ts_ls')
 
 vim.lsp.config('clangd', {
     cmd = {
