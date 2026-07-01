@@ -74,6 +74,9 @@ plugins=(git zsh-autosuggestions)
 
 source $ZSH/oh-my-zsh.sh
 
+# Ctrl-Space accepts the autosuggestion and runs it (^@ is the NUL byte Ctrl-Space emits)
+bindkey '^@' autosuggest-execute
+
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
@@ -125,7 +128,7 @@ alias gco='git checkout'
 alias gw='git worktree'
 
 alias zshrc='$EDITOR ~/.zshrc && source ~/.zshrc'
-alias nvimconfig='CWD=$(pwd) && cd ~/.config/nvim && $EDITOR ~/.config/nvim && cd $CWD'
+alias nvimconfig='CWD=$(pwd) && cd ~/.config/nvim && $EDITOR ~/.config/nvim/init.lua && cd $CWD'
 alias p='pnpm'
 
 alias ptree='cd /Users/matthew/Documents/pt/pinetree' 
@@ -133,6 +136,7 @@ alias pcone='cd /Users/matthew/Documents/pt/.claude/worktrees/pinecone'
 alias pwood='cd /Users/matthew/Documents/pt/.claude/worktrees/pinewood' 
 alias psol='cd /Users/matthew/Documents/pt/.claude/worktrees/pinesol' 
 alias ptar='cd /Users/matthew/Documents/pt/.claude/worktrees/pinetar' 
+alias mono='cd apps/monorails'
 
 export PATH="$HOME/.local/bin:$PATH"
 
