@@ -43,6 +43,7 @@ local lazy_spec = {
                 'pyright',
                 'ruff',
                 'solidity_ls_nomicfoundation',
+                'zls',
             },
         },
     },
@@ -330,5 +331,7 @@ vim.lsp.enable({
     'pyright',
     'ruff',
     'solidity_ls_nomicfoundation',
-    'sorbet',
+    'ruby_ls',
+    'zls',
+    'bashls',
 })
